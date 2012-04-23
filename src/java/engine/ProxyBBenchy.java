@@ -30,7 +30,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 
-import org.w3c.tidy.Tidy;
 
 public class ProxyBBenchy extends HttpServlet {
 
@@ -48,95 +47,7 @@ public class ProxyBBenchy extends HttpServlet {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response){
 
-        BufferedInputStream webToProxyBuf = null;
-        BufferedOutputStream proxyToClientBuf = null;
-        HttpURLConnection con;
-        
-        try{
-            int statusCode;
-            int oneByte;
-            String methodName;
-            String headerText;
-            System.out.println("wfuhrifghifhirhi"+ request.getParameter("siteName") );
-            String urlString = "http://"+(String)request.getParameter("siteName");
-            String queryString = request.getQueryString();
-            
-            urlString += queryString==null?"":"?"+queryString;
-            URL url = new URL(urlString);
-            
-            log.info("Fetching >"+url.toString());
-            
-            con =(HttpURLConnection) url.openConnection();
-            
-            methodName = request.getMethod();
-            con.setRequestMethod(methodName);
-            con.setDoOutput(true);
-            con.setDoInput(true);
-            con.setFollowRedirects(false);
-            con.setUseCaches(true);
-
-            for( Enumeration e = request.getHeaderNames() ; e.hasMoreElements();){
-                String headerName = e.nextElement().toString();
-                con.setRequestProperty(headerName,    request.getHeader(headerName));
-            }
-
-            con.connect();
-            
-            if(methodName.equals("POST")){
-                BufferedInputStream clientToProxyBuf = new BufferedInputStream(request.getInputStream());
-                BufferedOutputStream proxyToWebBuf  = new BufferedOutputStream(con.getOutputStream());
-                
-                while ((oneByte = clientToProxyBuf.read()) != -1) 
-                    proxyToWebBuf.write(oneByte);
-                
-                proxyToWebBuf.flush();
-                proxyToWebBuf.close();
-                clientToProxyBuf.close();
-            }
-            
-            statusCode = con.getResponseCode();
-            response.setStatus(statusCode);
-            
-            for( Iterator i = con.getHeaderFields().entrySet().iterator() ; i.hasNext() ;){
-                Map.Entry mapEntry = (Map.Entry)i.next();
-                if(mapEntry.getKey()!=null)
-                    response.setHeader(mapEntry.getKey().toString(), ((List)mapEntry.getValue()).get(0).toString());
-            }
-            
-            webToProxyBuf = new BufferedInputStream(con.getInputStream());
-            proxyToClientBuf = new BufferedOutputStream(response.getOutputStream());
-            
-            
-            
-            Tidy tidy = new Tidy();
-            tidy.setQuiet(true);
-            tidy.setShowWarnings(false);
-            Document responseBenFormat = tidy.parseDOM(webToProxyBuf,null);
-            
-            XPathFactory factory = XPathFactory.newInstance();
-            XPath xPath=factory.newXPath();
-            String pattern = "//a[@class='link']/@href";
-            NodeList nodes = (NodeList)xPath.evaluate(pattern, response, XPathConstants.NODESET);
-            System.out.println("Stampo link");
-            for (int i = 0; i < nodes.getLength(); i++) {
-                 System.out.println((String) nodes.item(i).getNodeValue());
-            }
-            
-            
-            while ((oneByte = webToProxyBuf.read()) != -1) 
-                proxyToClientBuf.write(oneByte);
-
-            proxyToClientBuf.flush();
-            proxyToClientBuf.close();
-
-            webToProxyBuf.close();
-            con.disconnect();
-            
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        finally{
-        }
-    }
+       
+        String urlString = "http://"+(String)request.getParameter("siteName");
+    }    
 }

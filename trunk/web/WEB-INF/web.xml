@@ -4,9 +4,25 @@
         <servlet-name>ProxyBBenchy</servlet-name>
         <servlet-class>engine.ProxyBBenchy</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ProxIt</servlet-name>
+        <servlet-class>engine.ProxIt</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Dispach</servlet-name>
+        <servlet-class>engine.Dispach</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ProxyBBenchy</servlet-name>
         <url-pattern>/ProxyBBenchy</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProxIt</servlet-name>
+        <url-pattern>/ProxIt</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Dispach</servlet-name>
+        <url-pattern>/Dispach</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

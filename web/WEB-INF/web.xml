@@ -5,16 +5,16 @@
         <servlet-class>engine.ProxIt</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Dispach</servlet-name>
-        <servlet-class>engine.Dispach</servlet-class>
+        <servlet-name>Dispatch</servlet-name>
+        <servlet-class>engine.Dispatch</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ProxIt</servlet-name>
         <url-pattern>/ProxIt</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>Dispach</servlet-name>
-        <url-pattern>/Dispach</url-pattern>
+        <servlet-name>Dispatch</servlet-name>
+        <url-pattern>/Dispatch</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

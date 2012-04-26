@@ -6,7 +6,12 @@ package engine;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -15,6 +20,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 /**
@@ -35,17 +45,9 @@ public class Dispatch extends HttpServlet {
         log = Logger.getLogger(ProxIt.class.getName());
     }
 
-    /**
-     * Processes requests for both HTTP
-     * <code>GET</code> and
-     * <code>POST</code> methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+ 
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
@@ -53,6 +55,9 @@ public class Dispatch extends HttpServlet {
             Cookie[] cookies=request.getCookies();
             for(int i=0;i<cookies.length;i++)
                 response.addCookie(cookies[i]);
+          
+            Enumeration<String> parametri=request.getParameterNames();
+           
             
             System.out.println("\n\nDISPATCH -> ricevuto: "+request.getParameter("link"));
             if(request.getQueryString().contains("&"))
@@ -67,43 +72,125 @@ public class Dispatch extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP
-     * <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP
-     * <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
+ 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        executePost(request, response);
+        
+    }
+    protected void executePost(HttpServletRequest request, HttpServletResponse response) throws MalformedURLException, IOException
+    {
+            HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
+                 
+            Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
+            String site=hashLink.get(request.getParameter("link"));
+            
+            Connection conn=Jsoup.connect(new URL(site).toString()).userAgent("Mozilla");
+            
+            Cookie[] cookies=request.getCookies();
+            for(int i=0;i<cookies.length;i++)
+                conn.cookie(cookies[i].getName(),cookies[i].getValue());
+            
+           Enumeration<String> parametri=request.getParameterNames();
+           while (parametri.hasMoreElements())
+           {
+               String tmp=parametri.nextElement();              
+               conn.data(tmp, request.getParameter(tmp));
+           }
+           
+         
+            Document doc = conn.method(Connection.Method.POST).execute().parse();
+           
+            conn.response().cookies();
+            Elements resultLinks = doc.body().getElementsByTag("a");
+            resultLinks.addAll(doc.body().getElementsByTag("img"));
+            
+            for(Element link : resultLinks)
+            {
+                //System.out.println(link.text()+" "+link.attr("abs:href"));
+                String linkName = "id"+counterLink;
+                hashLink.put(linkName, link.attr("abs:href"));
+                link.attr("href", "Dispatch?link="+linkName);  //qui cambio gli attributi
+               
+                counterLink++;
+            }
+            
+            Elements resultForm = doc.body().getElementsByTag("form");
+            resultLinks.addAll(resultForm);
+             
+            for(Element link : resultForm)
+            {
+                if(link.attr("method").equalsIgnoreCase("POST"))
+                {
+                    System.out.println("VADO AL POST");
+                    System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
+                        hashLink.put(linkName, link.attr("abs:action"));
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+             
+                }else{
+                    
+                     System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
+                        hashLink.put(linkName, link.attr("abs:action"));
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+                }
+            }
+           
+            doc.head().append(" <div class=\"forabg\">"+
+            "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
+               " <ul class=\"topiclist\">"+
+                   " <li class=\"header\">"+
+                   "     <dl class=\"icon\"\\>     <dt>SPAZIO PUBBLICITARIO DI {SITENAME}</dt>"+
+                 "       </dl>"+
+                "    </li>"+
+               " </ul>"+
+               " <ul class=\"topiclist forums\">"+
+                   " <li>"+
+                      "  <dl>"+
+                     "       <dd style=\"padding:5px; text-align: center; border:none;\">"+
+                    "            QUI METTI IL CODICE DELLA PUBBLICITA'"+
+                   "         </dd>"+
+                  "      </dl>"+
+                 "   </li>"+
+                "</ul>"+
+                "<span class=\"corners-bottom\"><span></span></span></div></div>");
+            response.getOutputStream().write(doc.html().getBytes());
+            
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>

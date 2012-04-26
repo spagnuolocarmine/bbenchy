@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,101 +47,78 @@ public class ProxIt extends HttpServlet {
     }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException{
-    	doPost(request, response);
-    }
-
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
-       
-            /*DefaultHttpClient httpclient = new DefaultHttpClient();
-            HttpHost targetHost = new HttpHost("www.google.it",80,"http");
-            HttpHost proxy = new HttpHost("localhost",8080);
-            httpclient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-
-            HttpGet httpget = new HttpGet("/");
-            System.out.println("\n\n----------------------------------------");
-            System.out.println("executing request: " + httpget.getRequestLine());
-            System.out.println("via proxy: " + proxy);
-            System.out.println("to target: " + targetHost);
-
-            HttpResponse response2 = httpclient.execute(targetHost, httpget);
-            HttpEntity entity = response2.getEntity();
-
-            System.out.println("----------------------------------------");
-            System.out.println(response2.getStatusLine());
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            */
-             HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
+    	HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
                  
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
-            //System.err.println("REQUEST: "+new URL(request.getQueryString()));
-           
             
-            
-            
-           /* String idSite=request.getParameter("link");
-            String initial_url=new URL(request.getParameter("siteName")+request.getQueryString()).toString();
-            String path_del="http://www.google.it/search?link=id1000siteName=";
-            String url_val=initial_url.substring(path_del.length());
-            System.out.println("pathdel "+ path_del+"RICHIESTA REALEMENTE FATTA PER :"+ url_val);
-            
-           */
-            //Document doc = Jsoup.connect(url_val).userAgent("Mozilla").get();
             System.out.println(request.getQueryString().replace("%3A%2F%2F", "://"));
-            Document doc = Jsoup.connect(new URL(request.getQueryString().replace("%3A%2F%2F", "://").substring(9)).toString()).userAgent("Mozilla").get();
-           // Document doc = Jsoup.parse(new URL(url_val),0);
-            
-            
-            
-            
+            Document doc = Jsoup.connect(new URL(request.getQueryString().replace("%3A%2F%2F", "://").
+                    substring(9)).toString()).userAgent("Mozilla").get();
+           
             Elements resultLinks = doc.body().getElementsByTag("a");
             resultLinks.addAll(doc.body().getElementsByTag("img"));
-            
-            for(Element link : resultLinks)
+             for(Element link : resultLinks)
             {
                 //System.out.println(link.text()+" "+link.attr("abs:href"));
                 String linkName = "id"+counterLink;
                 hashLink.put(linkName, link.attr("abs:href"));
                 link.attr("href", "Dispatch?link="+linkName);  //qui cambio gli attributi
-               // link.append("<input type=\"hidden\" value=\"id")
+               
                 counterLink++;
             }
             
+            
             Elements resultForm = doc.body().getElementsByTag("form");
             resultLinks.addAll(resultForm);
-             
             for(Element link : resultForm)
             {
-                System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+                if(link.attr("method").equalsIgnoreCase("POST"))
+                {
+                    System.out.println("VADO AL POST");
+                    System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
 
-                if(link.getElementById("proxitid")!=null)
-                {
-                    String linkName = link.getElementById("proxitid").attr("link");
-                    hashLink.put(linkName, link.attr("abs:action"));
-     
-                }
-                else
-                {
-                        String linkName = "id"+counterLink;
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
                         hashLink.put(linkName, link.attr("abs:action"));
-                        link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
-                        counterLink++;
-                }
-                
-                
-                
-                System.out.println("questa è l'action ---> "+link.attr("abs:action"));
-                link.attr("action", "Dispatch");  //qui cambio gli attributi
-                
-            
-                //if(link.getElementById("proxitid")!=null)
-                    //link.getElementById("proxitid").remove();
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+             
+                }else{
                     
-                
-                
-               
-            
-                
+                     System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
+                        hashLink.put(linkName, link.attr("abs:action"));
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+                }
             }
            
             doc.head().append(" <div class=\"forabg\">"+
@@ -165,7 +143,121 @@ public class ProxIt extends HttpServlet {
             Cookie[] cookies=request.getCookies();
             for(int i=0;i<cookies.length;i++)
                 response.addCookie(cookies[i]);
-            response.addCookie(null);
+           
+    
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
+       
+            HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
+                 
+            Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
+            
+            
+            Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A%2F%2F", "://").
+                    substring(9)).toString()).userAgent("Mozilla");
+            
+            Cookie[] cookies=request.getCookies();
+            for(int i=0;i<cookies.length;i++)
+                conn.cookie(cookies[i].getName(),cookies[i].getValue());
+            Enumeration<String> parametri=request.getParameterNames();
+           while (parametri.hasMoreElements())
+           {
+               String tmp=parametri.nextElement();              
+               conn.data(tmp, request.getParameter(tmp));
+           }
+           
+           
+            Document doc = conn.post();
+           
+            Elements resultLinks = doc.body().getElementsByTag("a");
+            resultLinks.addAll(doc.body().getElementsByTag("img"));
+            
+            for(Element link : resultLinks)
+            {
+                //System.out.println(link.text()+" "+link.attr("abs:href"));
+                String linkName = "id"+counterLink;
+                hashLink.put(linkName, link.attr("abs:href"));
+                link.attr("href", "Dispatch?link="+linkName);  //qui cambio gli attributi
+               
+                counterLink++;
+            }
+            
+            Elements resultForm = doc.body().getElementsByTag("form");
+            resultLinks.addAll(resultForm);
+             
+            for(Element link : resultForm)
+            {
+                if(link.attr("method").equalsIgnoreCase("POST"))
+                {
+                    System.out.println("VADO AL POST");
+                    System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
+                        hashLink.put(linkName, link.attr("abs:action"));
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+             
+                }else{
+                    
+                     System.out.println("--------> ACTION:" +link.text()+" "+link.attr("abs:action")+" numero: "+counterLink);
+
+
+                    if(link.getElementById("proxitid")!=null)
+                    {
+                        String linkName = link.getElementById("proxitid").attr("link");
+                        hashLink.put(linkName, link.attr("abs:action"));
+
+                    }
+                    else
+                    {
+                            String linkName = "id"+counterLink;
+                            hashLink.put(linkName, link.attr("abs:action"));
+                            link.append("<input id=\"proxitid\" type=\"hidden\" name=\"link\" value=\""+linkName+"\" />");
+                            counterLink++;
+                    }
+
+                    System.out.println("questa è l'action ---> "+link.attr("abs:action"));
+
+                    link.attr("action", "Dispatch");  //qui cambio gli attributi
+                }
+            }
+           
+            doc.head().append(" <div class=\"forabg\">"+
+            "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
+               " <ul class=\"topiclist\">"+
+                   " <li class=\"header\">"+
+                   "     <dl class=\"icon\"\\>     <dt>SPAZIO PUBBLICITARIO DI {SITENAME}</dt>"+
+                 "       </dl>"+
+                "    </li>"+
+               " </ul>"+
+               " <ul class=\"topiclist forums\">"+
+                   " <li>"+
+                      "  <dl>"+
+                     "       <dd style=\"padding:5px; text-align: center; border:none;\">"+
+                    "            QUI METTI IL CODICE DELLA PUBBLICITA'"+
+                   "         </dd>"+
+                  "      </dl>"+
+                 "   </li>"+
+                "</ul>"+
+                "<span class=\"corners-bottom\"><span></span></span></div></div>");
+            response.getOutputStream().write(doc.html().getBytes());
+            
+    
     }
    
 }

@@ -52,21 +52,36 @@ public class ProxIt extends HttpServlet {
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
             
             System.out.println(request.getQueryString().replace("%3A%2F%2F", "://"));
-            Document doc = Jsoup.connect(new URL(request.getQueryString().replace("%3A%2F%2F", "://").
-                    substring(9)).toString()).userAgent("Mozilla").get();
+            Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A", ":").replace("%2F", "/").
+                    substring(9)).toString());
+           // conn.followRedirects(true);
+            Document doc=conn.userAgent("Mozilla").get();
+            
+           for(Map.Entry<String,String> e: conn.response().cookies().entrySet())
+           {
+               System.out.println("Inserisco cookie "+e.getKey());
+               response.addCookie(new Cookie(e.getKey(), e.getValue()));
+           }
            
             Elements resultLinks = doc.body().getElementsByTag("a");
-            resultLinks.addAll(doc.body().getElementsByTag("img"));
+          
              for(Element link : resultLinks)
             {
                 //System.out.println(link.text()+" "+link.attr("abs:href"));
                 String linkName = "id"+counterLink;
                 hashLink.put(linkName, link.attr("abs:href"));
                 link.attr("href", "Dispatch?link="+linkName);  //qui cambio gli attributi
-               
+            
                 counterLink++;
             }
+              Elements resultLinksImg = doc.body().getElementsByTag("img");
+              for(Element link : resultLinks)
+            {
+                String val=link.attr("abs:src");
+                link.attr("src", val);  //qui cambio gli attributi
             
+            
+            }
             
             Elements resultForm = doc.body().getElementsByTag("form");
             resultLinks.addAll(resultForm);
@@ -125,7 +140,7 @@ public class ProxIt extends HttpServlet {
             "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
                " <ul class=\"topiclist\">"+
                    " <li class=\"header\">"+
-                   "     <dl class=\"icon\"\\>     <dt>SPAZIO PUBBLICITARIO DI {SITENAME}</dt>"+
+                   "     <dl class=\"icon\"\\>     <dt>RISULTATI BENCHMARK</dt>"+
                  "       </dl>"+
                 "    </li>"+
                " </ul>"+
@@ -133,7 +148,7 @@ public class ProxIt extends HttpServlet {
                    " <li>"+
                       "  <dl>"+
                      "       <dd style=\"padding:5px; text-align: center; border:none;\">"+
-                    "            QUI METTI IL CODICE DELLA PUBBLICITA'"+
+                    "            TABELLA RISULTATI'"+
                    "         </dd>"+
                   "      </dl>"+
                  "   </li>"+
@@ -143,6 +158,7 @@ public class ProxIt extends HttpServlet {
             Cookie[] cookies=request.getCookies();
             for(int i=0;i<cookies.length;i++)
                 response.addCookie(cookies[i]);
+            
            
     
     }
@@ -154,9 +170,9 @@ public class ProxIt extends HttpServlet {
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
             
             
-            Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A%2F%2F", "://").
-                    substring(9)).toString()).userAgent("Mozilla");
-            
+             Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A", ":").replace("%2F", "/").
+                    substring(9)).toString());
+           
             Cookie[] cookies=request.getCookies();
             for(int i=0;i<cookies.length;i++)
                 conn.cookie(cookies[i].getName(),cookies[i].getValue());
@@ -166,22 +182,35 @@ public class ProxIt extends HttpServlet {
                String tmp=parametri.nextElement();              
                conn.data(tmp, request.getParameter(tmp));
            }
-           
-           
-            Document doc = conn.post();
-           
-            Elements resultLinks = doc.body().getElementsByTag("a");
-            resultLinks.addAll(doc.body().getElementsByTag("img"));
+           //conn.followRedirects(true);
+           Document doc=conn.userAgent("Mozilla").post();
             
-            for(Element link : resultLinks)
+           for(Map.Entry<String,String> e: conn.response().cookies().entrySet())
+               {
+               System.out.println("Inserisco cookie "+e.getKey());
+               response.addCookie(new Cookie(e.getKey(), e.getValue()));
+           }
+           
+              Elements resultLinks = doc.body().getElementsByTag("a");
+          
+             for(Element link : resultLinks)
             {
                 //System.out.println(link.text()+" "+link.attr("abs:href"));
                 String linkName = "id"+counterLink;
                 hashLink.put(linkName, link.attr("abs:href"));
                 link.attr("href", "Dispatch?link="+linkName);  //qui cambio gli attributi
-               
+            
                 counterLink++;
             }
+            
+             Elements resultLinksImg = doc.body().getElementsByTag("img");
+             for(Element link : resultLinks)
+                {
+                    String val=link.attr("abs:src");
+                    link.attr("src", val);  //qui cambio gli attributi
+            
+            
+                }
             
             Elements resultForm = doc.body().getElementsByTag("form");
             resultLinks.addAll(resultForm);
@@ -238,10 +267,10 @@ public class ProxIt extends HttpServlet {
             }
            
             doc.head().append(" <div class=\"forabg\">"+
-            "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
+             "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
                " <ul class=\"topiclist\">"+
                    " <li class=\"header\">"+
-                   "     <dl class=\"icon\"\\>     <dt>SPAZIO PUBBLICITARIO DI {SITENAME}</dt>"+
+                   "     <dl class=\"icon\"\\>     <dt>RISULTATI BENCHMARK</dt>"+
                  "       </dl>"+
                 "    </li>"+
                " </ul>"+
@@ -249,7 +278,7 @@ public class ProxIt extends HttpServlet {
                    " <li>"+
                       "  <dl>"+
                      "       <dd style=\"padding:5px; text-align: center; border:none;\">"+
-                    "            QUI METTI IL CODICE DELLA PUBBLICITA'"+
+                    "            TABELLA RISULTATI'"+
                    "         </dd>"+
                   "      </dl>"+
                  "   </li>"+

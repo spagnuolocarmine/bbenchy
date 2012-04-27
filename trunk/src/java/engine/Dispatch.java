@@ -86,7 +86,7 @@ public class Dispatch extends HttpServlet {
             String site=hashLink.get(request.getParameter("link"));
             
             Connection conn=Jsoup.connect(new URL(site).toString()).userAgent("Mozilla");
-            
+           // conn.followRedirects(true);
             Cookie[] cookies=request.getCookies();
             for(int i=0;i<cookies.length;i++)
                 conn.cookie(cookies[i].getName(),cookies[i].getValue());
@@ -97,11 +97,15 @@ public class Dispatch extends HttpServlet {
                String tmp=parametri.nextElement();              
                conn.data(tmp, request.getParameter(tmp));
            }
-           
+           System.out.println("VADO NEL POST A "+new URL(site).toString());
          
             Document doc = conn.method(Connection.Method.POST).execute().parse();
-           
-            conn.response().cookies();
+            
+            
+                   for(Map.Entry<String,String> e: conn.response().cookies().entrySet())
+                   
+                       response.addCookie(new Cookie(e.getKey(), e.getValue()));
+                   
             Elements resultLinks = doc.body().getElementsByTag("a");
             resultLinks.addAll(doc.body().getElementsByTag("img"));
             
@@ -173,7 +177,7 @@ public class Dispatch extends HttpServlet {
             "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
                " <ul class=\"topiclist\">"+
                    " <li class=\"header\">"+
-                   "     <dl class=\"icon\"\\>     <dt>SPAZIO PUBBLICITARIO DI {SITENAME}</dt>"+
+                   "     <dl class=\"icon\"\\>     <dt>RISULTATI BENCHMARK</dt>"+
                  "       </dl>"+
                 "    </li>"+
                " </ul>"+
@@ -181,7 +185,7 @@ public class Dispatch extends HttpServlet {
                    " <li>"+
                       "  <dl>"+
                      "       <dd style=\"padding:5px; text-align: center; border:none;\">"+
-                    "            QUI METTI IL CODICE DELLA PUBBLICITA'"+
+                    "            TABELLA RISULTATI'"+
                    "         </dd>"+
                   "      </dl>"+
                  "   </li>"+

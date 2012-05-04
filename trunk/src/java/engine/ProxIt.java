@@ -18,6 +18,9 @@ import javax.servlet.http.*;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.sound.midi.SysexMessage;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -51,8 +54,8 @@ public class ProxIt extends HttpServlet {
                  
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
             
-            System.out.println(request.getQueryString().replace("%3A%2F%2F", "://"));
-            Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A", ":").replace("%2F", "/").
+            System.out.println(request.getQueryString().replaceAll("%3A%2F%2F", "://"));
+            Connection conn=Jsoup.connect(new URL(request.getQueryString().replaceAll("%3A", ":").replaceAll("%2F", "/").
                     substring(9)).toString());
            // conn.followRedirects(true);
             Document doc=conn.userAgent("Mozilla").get();
@@ -135,6 +138,7 @@ public class ProxIt extends HttpServlet {
                     link.attr("action", "Dispatch");  //qui cambio gli attributi
                 }
             }
+            doc.body().toString();
            
             doc.head().append(" <div class=\"forabg\">"+
             "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
@@ -170,7 +174,7 @@ public class ProxIt extends HttpServlet {
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
             
             
-             Connection conn=Jsoup.connect(new URL(request.getQueryString().replace("%3A", ":").replace("%2F", "/").
+             Connection conn=Jsoup.connect(new URL(request.getQueryString().replaceAll("%3A", ":").replaceAll("%2F", "/").
                     substring(9)).toString());
            
             Cookie[] cookies=request.getCookies();
@@ -183,7 +187,9 @@ public class ProxIt extends HttpServlet {
                conn.data(tmp, request.getParameter(tmp));
            }
            //conn.followRedirects(true);
+            
            Document doc=conn.userAgent("Mozilla").post();
+        
             
            for(Map.Entry<String,String> e: conn.response().cookies().entrySet())
                {
@@ -265,7 +271,27 @@ public class ProxIt extends HttpServlet {
                     link.attr("action", "Dispatch");  //qui cambio gli attributi
                 }
             }
-           
+            //<script type="text/javascript" language="javascript">
+            
+            Elements resultScript= doc.body().getElementsByTag("script");
+            for(Element script : resultScript)
+            {
+                if(script.attr("type").equalsIgnoreCase("text/javascript")
+                        &&
+                        script.attr("language").equalsIgnoreCase("javascript"))
+                {
+                    System.out.println("Elaborazione .... link in script:");
+                     String text_script=script.data();
+                     String regeJsNoAbs="(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+                     Pattern pattern = Pattern.compile(regeJsNoAbs);
+                     Matcher matcher = pattern.matcher(text_script);
+                      while(matcher.find()) {
+                        System.out.println("Sottosequenza : "+matcher.group());
+                        System.out.println("Sottogruppo 1 : "+matcher.group(1));
+                        }
+                }
+            }
+            
             doc.head().append(" <div class=\"forabg\">"+
              "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
                " <ul class=\"topiclist\">"+
@@ -285,6 +311,7 @@ public class ProxIt extends HttpServlet {
                 "</ul>"+
                 "<span class=\"corners-bottom\"><span></span></span></div></div>");
             response.getOutputStream().write(doc.html().getBytes());
+            
             
     
     }

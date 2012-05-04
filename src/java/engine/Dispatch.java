@@ -13,6 +13,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -24,6 +26,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 
@@ -100,7 +103,7 @@ public class Dispatch extends HttpServlet {
            System.out.println("VADO NEL POST A "+new URL(site).toString());
          
             Document doc = conn.method(Connection.Method.POST).execute().parse();
-            
+           
             
                    for(Map.Entry<String,String> e: conn.response().cookies().entrySet())
                    
@@ -172,7 +175,64 @@ public class Dispatch extends HttpServlet {
                     link.attr("action", "Dispatch");  //qui cambio gli attributi
                 }
             }
+            
+            
+            
+            System.out.println(doc.head());
+            System.out.println(doc.body());
+            
+            
+            
+            Elements resultScript= doc.body().getElementsByTag("script");
+            resultScript.addAll(doc.head().getElementsByTag("script"));
            
+            for(Element script : resultScript)
+            {
+                if(script.attr("type").equalsIgnoreCase("text/javascript")
+                        &&
+                        script.attr("language").equalsIgnoreCase("javascript"))
+                {
+                   // System.out.println("Elaborazione .... link in script:\n"+script.data());
+                     String text_script=script.data();
+                     System.out.println("vecchio testo: "+text_script);
+                     String regeJsNoAbs="(\"|')(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|](\"|')";
+                     Pattern pattern = Pattern.compile(regeJsNoAbs);
+                     Matcher matcher = pattern.matcher(text_script);
+                   
+                      while(matcher.find())
+                      {
+                            String url_script=matcher.group();
+                    
+                            String linkName = "id"+counterLink;
+                            counterLink++;
+                            
+                            
+                            System.out.println("Provo a sostituire "+url_script+" con "+"Dispatch?link="+linkName);
+                            
+                            text_script=text_script.replaceAll(url_script,"'Dispatch?link="+linkName+"'");
+                           
+                            System.out.println("NUovo testo:\n"+text_script+"\n\n");
+                            
+                            script.
+                                    
+                                    text(text_script);
+                            url_script=url_script.substring(1);
+                            url_script=url_script.substring(0,url_script.length()-1);
+                            hashLink.put(linkName, url_script);
+                            
+                            
+                      }
+                }
+            }
+            
+            
+            
+            System.out.println(doc.head());
+            System.out.println(doc.body());
+            
+            
+            
+            
             doc.head().append(" <div class=\"forabg\">"+
             "<div class=\"inner\"><span class=\"corners-top\"><span></span></span>"+
                " <ul class=\"topiclist\">"+
@@ -191,6 +251,8 @@ public class Dispatch extends HttpServlet {
                  "   </li>"+
                 "</ul>"+
                 "<span class=\"corners-bottom\"><span></span></span></div></div>");
+            
+            
             response.getOutputStream().write(doc.html().getBytes());
             
     }

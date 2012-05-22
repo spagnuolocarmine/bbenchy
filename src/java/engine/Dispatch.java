@@ -147,12 +147,12 @@ public class Dispatch extends HttpServlet {
          
            
              //set HTTP Header
-             setHTTPheader(request, conn);
+            // setHTTPheader(request, conn);
            
            
            //do HTTP connection
             long start_timer=System.currentTimeMillis();
-              Connection.Response resp_conn=conn.method(Connection.Method.POST).execute();
+              Connection.Response resp_conn=conn.userAgent(request.getHeader("user-agent")).method(Connection.Method.POST).execute();
             long end_timer=System.currentTimeMillis();
             long time=end_timer-start_timer;
            
@@ -291,16 +291,16 @@ public class Dispatch extends HttpServlet {
 
        
             //send response page to the client
-              FileOutputStream fos = new FileOutputStream("temp.txt");
+             FileOutputStream fos = new FileOutputStream("temp.txt");
              PrintWriter pw = new PrintWriter(fos);
              pw.print(doc.html());
-             
+             pw.close();
+             fos.close();
              FileReader fr = new FileReader("temp.txt");
              JSParser p = new JSParser(fr);   
              p.set_request_time(time+", POST");
-			
-			Symbol s;
-			while ((s = p.next_token()).sym != -1999) {}
+             Symbol s;
+		while ((s = p.next_token()).sym != -1999);
                         
                         
          /*   String mypage=p.getModFile();

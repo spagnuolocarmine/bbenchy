@@ -95,12 +95,11 @@ public class ProxIt extends HttpServlet {
                 conn.cookie(cookies[i].getName(),cookies[i].getValue());
   
            //set HTTP header
-            setHTTPheader(request,conn);
-           
-           System.out.println("setto i cookie");
+           // setHTTPheader(request,conn);
+         
   
             long start_timer=System.currentTimeMillis();
-              Connection.Response resp_conn=conn.method(Connection.Method.GET).execute();
+              Connection.Response resp_conn=conn.userAgent(request.getHeader("user-agent")).method(Connection.Method.GET).execute();
             long end_timer=System.currentTimeMillis();
             long time=end_timer-start_timer;
            
@@ -193,18 +192,18 @@ public class ProxIt extends HttpServlet {
             }
 
              
-              FileOutputStream fos = new FileOutputStream("temp.txt");
+             FileOutputStream fos = new FileOutputStream("temp.txt");
              PrintWriter pw = new PrintWriter(fos);
              pw.print(doc.html());
-             
+             pw.close();
+             fos.close();
              FileReader fr = new FileReader("temp.txt");
              JSParser p = new JSParser(fr);   
              p.set_request_time(time+", GET");
-			
-			Symbol s;
-			while ((s = p.next_token()).sym != -1999) {}
+             Symbol s;
+		while ((s = p.next_token()).sym != -1999);
         
-			
+                            
         /*     		
             String mypage=p.getModFile();
              int insert=mypage.indexOf("<head");
@@ -216,7 +215,9 @@ public class ProxIt extends HttpServlet {
              String follow=mypage.substring(insert+1, mypage.length());
              mypage=first+myhead+follow;
              */
+          
              response.getOutputStream().write(p.getModFile().getBytes());
+            
            
     
     }
@@ -247,10 +248,10 @@ public class ProxIt extends HttpServlet {
            //conn.followRedirects(true);
            
            //set HTTP header
-            setHTTPheader(request,conn);
+            //setHTTPheader(request,conn);
             
              long start_timer=System.currentTimeMillis();
-              Connection.Response resp_conn=conn.method(Connection.Method.POST).execute();
+              Connection.Response resp_conn=conn.userAgent(request.getHeader("user-agent")).method(Connection.Method.POST).execute();
             long end_timer=System.currentTimeMillis();
             long time=end_timer-start_timer;
            
@@ -370,14 +371,13 @@ public class ProxIt extends HttpServlet {
              FileOutputStream fos = new FileOutputStream("temp.txt");
              PrintWriter pw = new PrintWriter(fos);
              pw.print(doc.html());
-             
+             pw.close();
+             fos.close();
              FileReader fr = new FileReader("temp.txt");
              JSParser p = new JSParser(fr);   
-             //p.set_filename("gmail.html");
-			
-			Symbol s;
-			while ((s = p.next_token()).sym != -1999) {}
-                        
+             p.set_request_time(time+", POST");
+             Symbol s;
+		while ((s = p.next_token()).sym != -1999);
                
             /* 		
              String mypage=p.getModFile();
@@ -390,7 +390,7 @@ public class ProxIt extends HttpServlet {
              String follow=mypage.substring(insert+1, mypage.length());
              mypage=first+myhead+follow;
              */
-                        p.set_request_time(time+", POST");
+                        
              response.getOutputStream().write(p.getModFile().getBytes());
     
     }

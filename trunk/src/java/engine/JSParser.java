@@ -345,7 +345,7 @@ class JSParser implements java_cup.runtime.Scanner {
 		
 	head="<style type=\"text/css\">" +
   		"body{font: 76%/1.3 Arial,Verdana,sans-serif}\n" +
-  		"div.box{width:800px !important;width /**/:800px;\n" +
+  		"div.box{margin-left:25%; width:800px !important;width /**/:800px;\n" +
   		"max-height: 220px;\n" +
   		" overflow:scroll;\n" +
   		"overflow:auto;padding: 4px;\n" +
@@ -417,7 +417,7 @@ class JSParser implements java_cup.runtime.Scanner {
   																"}</script>" +
   																"<div class=\"box\">\n" +
   																"<h1 class=\"B\">Risultati BBenchy request time:" +
-  																" <span class=\"B\"> "+time+" +</span></h1>" +
+  																" <span class=\"B\"> "+time+"</span></h1>" +
   																"<div class=\"box2\" id=\"bbEnchyBox\">\n" +
   																"<!--------QUI LO SCRIPT INSERISCE I RISULTATI------->" +
   																"</div>" +

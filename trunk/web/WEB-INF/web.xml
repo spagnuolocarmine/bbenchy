@@ -8,6 +8,10 @@
         <servlet-name>Dispatch</servlet-name>
         <servlet-class>engine.Dispatch</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>BenchIt</servlet-name>
+        <servlet-class>engine.BenchIt</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ProxIt</servlet-name>
         <url-pattern>/ProxIt</url-pattern>
@@ -15,6 +19,10 @@
     <servlet-mapping>
         <servlet-name>Dispatch</servlet-name>
         <url-pattern>/Dispatch</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BenchIt</servlet-name>
+        <url-pattern>/BenchIt</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

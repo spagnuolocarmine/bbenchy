@@ -99,7 +99,7 @@ public class BenchIt extends HttpServlet {
          StringReader sr = new StringReader(doc.html());
          JSParser jsParser = new JSParser(sr);
          //parse JavaScript
-            jsParser.set_request_time("GET "+time+"ms");
+            jsParser.set_request_time("POST "+time+"ms");
             Symbol s; while ((s = jsParser.next_token()).sym != -1999);
          //write the modified document to browser
          response.getOutputStream().write(jsParser.getModFile().getBytes());
@@ -126,13 +126,14 @@ public class BenchIt extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("GET ->");
+       
         HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
         Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
         //compute the next hop
         String nextPage="";
         if(request.getParameter("link")!=null) nextPage=hashLink.get(request.getParameter("link"));
         else nextPage=request.getQueryString().replaceAll("%3A", ":").replaceAll("%2F", "/").substring(9);
+        System.out.println("GET -> "+nextPage);
         //set up connection
         Connection conn=Jsoup.connect(new URL(nextPage).toString());
         //set up cookies

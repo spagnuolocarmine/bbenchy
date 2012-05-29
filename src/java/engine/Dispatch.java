@@ -81,7 +81,7 @@ public class Dispatch extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
+     
         response.setContentType(request.getContentType());
         PrintWriter out = response.getWriter();
        
@@ -147,7 +147,7 @@ public class Dispatch extends HttpServlet {
          
            
              //set HTTP Header
-            // setHTTPheader(request, conn);
+             setHTTPheader(request, conn);
            
            
            //do HTTP connection
@@ -290,7 +290,8 @@ public class Dispatch extends HttpServlet {
             }
 
        
-            //send response page to the client
+                  //send page to browser
+                
              FileOutputStream fos = new FileOutputStream("temp.txt");
              PrintWriter pw = new PrintWriter(fos);
              pw.print(doc.html());
@@ -301,21 +302,12 @@ public class Dispatch extends HttpServlet {
              p.set_request_time(time+", POST");
              Symbol s;
 		while ((s = p.next_token()).sym != -1999);
-                        
-                        
-         /*   String mypage=p.getModFile();
-             int insert=mypage.indexOf("<head");
-             char c=mypage.charAt(insert+1);
-             while(c!='>')
-             { insert++; c=mypage.charAt(insert); }
-             String first=mypage.substring(0,insert+1);
-             System.out.println("FIRST" + first);
-             String follow=mypage.substring(insert+1, mypage.length());
-             mypage=first+myhead+follow;
-           */
-             
+               
+                 
              response.getOutputStream().write(p.getModFile().getBytes());
-            
+             
+        
+                //response.getOutputStream().write(doc.html().getBytes());
     }
 
     public String getServletInfo() {

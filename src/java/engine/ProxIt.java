@@ -80,7 +80,8 @@ public class ProxIt extends HttpServlet {
     }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException{
-    	HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
+    	
+        HashMap<String,String> hashLink = (HashMap<String,String>) servletContext.getAttribute("hashLink");
                  
             Integer counterLink = (Integer) servletContext.getAttribute("counterLink");
             System.out.println("ricevuta query string: "+request.getQueryString());
@@ -95,7 +96,7 @@ public class ProxIt extends HttpServlet {
                 conn.cookie(cookies[i].getName(),cookies[i].getValue());
   
            //set HTTP header
-           // setHTTPheader(request,conn);
+            setHTTPheader(request,conn);
          
   
             long start_timer=System.currentTimeMillis();
@@ -192,6 +193,8 @@ public class ProxIt extends HttpServlet {
             }
 
              
+              //send page to browser
+                
              FileOutputStream fos = new FileOutputStream("temp.txt");
              PrintWriter pw = new PrintWriter(fos);
              pw.print(doc.html());
@@ -199,24 +202,15 @@ public class ProxIt extends HttpServlet {
              fos.close();
              FileReader fr = new FileReader("temp.txt");
              JSParser p = new JSParser(fr);   
-             p.set_request_time(time+", GET");
+             p.set_request_time(time+", POST");
              Symbol s;
 		while ((s = p.next_token()).sym != -1999);
-        
-                            
-        /*     		
-            String mypage=p.getModFile();
-             int insert=mypage.indexOf("<head");
-             char c=mypage.charAt(insert+1);
-             while(c!='>')
-             { insert++; c=mypage.charAt(insert); }
-             String first=mypage.substring(0,insert+1);
-             System.out.println("FIRST" + first);
-             String follow=mypage.substring(insert+1, mypage.length());
-             mypage=first+myhead+follow;
-             */
-          
+               
+                 
              response.getOutputStream().write(p.getModFile().getBytes());
+             
+        
+                //response.getOutputStream().write(doc.html().getBytes());
             
            
     
@@ -248,7 +242,7 @@ public class ProxIt extends HttpServlet {
            //conn.followRedirects(true);
            
            //set HTTP header
-            //setHTTPheader(request,conn);
+            setHTTPheader(request,conn);
             
              long start_timer=System.currentTimeMillis();
               Connection.Response resp_conn=conn.userAgent(request.getHeader("user-agent")).method(Connection.Method.POST).execute();
@@ -264,7 +258,7 @@ public class ProxIt extends HttpServlet {
                response.addCookie(new Cookie(e.getKey(), e.getValue()));
            }
          
-              Elements resultLinks = doc.body().getElementsByTag("a");
+             Elements resultLinks = doc.body().getElementsByTag("a");
           
              for(Element link : resultLinks)
             {
@@ -376,22 +370,11 @@ public class ProxIt extends HttpServlet {
              FileReader fr = new FileReader("temp.txt");
              JSParser p = new JSParser(fr);   
              p.set_request_time(time+", POST");
-             Symbol s;
-		while ((s = p.next_token()).sym != -1999);
-               
-            /* 		
-             String mypage=p.getModFile();
-             int insert=mypage.indexOf("<head");
-             char c=mypage.charAt(insert+1);
-             while(c!='>')
-             { insert++; c=mypage.charAt(insert); }
-             String first=mypage.substring(0,insert+1);
-             System.out.println("FIRST" + first);
-             String follow=mypage.substring(insert+1, mypage.length());
-             mypage=first+myhead+follow;
-             */
-                        
+             Symbol s; while ((s = p.next_token()).sym != -1999);
              response.getOutputStream().write(p.getModFile().getBytes());
+             
+        
+                //response.getOutputStream().write(doc.html().getBytes());
     
     }
     

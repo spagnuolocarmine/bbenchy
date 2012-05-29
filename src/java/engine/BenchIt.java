@@ -62,6 +62,7 @@ public class BenchIt extends HttpServlet {
         String nextPage="";
         if(request.getParameter("link")!=null) nextPage=hashLink.get(request.getParameter("link"));
         else nextPage=request.getQueryString().replaceAll("%3A", ":").replaceAll("%2F", "/").substring(9);
+        System.out.println("POST -> "+nextPage);
         //set up connection
         Connection conn=Jsoup.connect(new URL(nextPage).toString());
         //set up cookies
@@ -95,6 +96,9 @@ public class BenchIt extends HttpServlet {
          replaceLinks(hashLink, counterLink, doc);
          
             
+         //replace links into javascript
+         replaceJavaScriptLinks(doc, hashLink, counterLink);
+         
          //Prepare document for parsing
          StringReader sr = new StringReader(doc.html());
          JSParser jsParser = new JSParser(sr);
@@ -106,7 +110,6 @@ public class BenchIt extends HttpServlet {
          
       
         /* 
-         replaceJavaScriptLinks(doc, hashLink, counterLink);
          response.getOutputStream().write(doc.html().getBytes());
          */
          
@@ -169,6 +172,10 @@ public class BenchIt extends HttpServlet {
           
          replaceLinks(hashLink, counterLink, doc);
             
+         
+         //replace links into javascript
+         replaceJavaScriptLinks(doc, hashLink, counterLink);
+         
          //Prepare document for parsing
          StringReader sr = new StringReader(doc.html());
          JSParser jsParser = new JSParser(sr);
@@ -180,7 +187,6 @@ public class BenchIt extends HttpServlet {
          
       
         /* 
-         replaceJavaScriptLinks(doc, hashLink, counterLink);
          response.getOutputStream().write(doc.html().getBytes());
          */
             
